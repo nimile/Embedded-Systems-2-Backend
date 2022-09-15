@@ -1,0 +1,315 @@
+#define LORA_ACTIVE_
+
+// TODO Remove guard and method 
+#ifndef LORA_ACTIVE
+#include <HaevnNotifier.h> 
+void initializeLoRa(int retries = 10){
+    // TODO Remove when lora is used
+    setupAndStartWebServer([](AsyncWebServerRequest *request){
+        char buff[1024];
+        sprintf(buff, "<html><head><meta http-equiv=\"refresh\" content=\"1\"></head><body><h1 style=\"text-align: center;\">Current water value: %i<h1><h1 style=\"text-align: center;\">Current voltage value: %i<h1></body></html>", water_data_m->current, device_data_m->battery);
+        request->send(200, "text/html", buff);
+    });
+}
+#endif // LORA_ACTIVE_
+
+
+#include <stdlib.h>
+#include <stdarg.h>
+#include <string.h>
+#include <stdio.h>
+
+
+#include <Wire.h>  
+#include <VL53L0X.h>  
+
+
+#ifdef LORA_ACTIVE
+#include <SPI.h>   
+#include <LoRa.h>  
+
+// Different values for each LoRa region
+#define LORA_ASIA 433E6
+#define LORA_EUROPE 866E6
+#define LORA_NA 915E6
+
+// LoRa region of this device, use one from above
+#define LORA_REGION LORA_EUROPE
+
+// LoRa Sync word for this device
+#define LORA_SYNC_WORD 0xF3
+
+// LoRa Pin layout
+#define LORA_PIN_SS 5
+#define LORA_PIN_RST 14
+#define LORA_PIN_DIO 2
+#endif
+
+#define VL_MEASUREMENTS_AMOUNT 10
+#define VL_SCK_PIN 21
+#define VL_SCL_PIN 22
+#define BATTERY_PIN 34
+
+
+#define DISTANCE_CALIBRATION_VALUE (0.89)
+#define MAX_VOLTAGE (4.2)
+
+// The following definitions are used as QOL to create
+// a better interaction with time values
+#define SECOND (1000)
+#define MINUTE (60 * SECOND)
+#define HOUR (60 * MINUTE)
+#define DAY (24 * HOUR)
+
+// Controls when the device should measure and notify the server
+// For production remove line 42 and 44 uncomment line 43
+//#define ACTIVITY_THRESHOLD (5 * MINUTE) 
+#define ACTIVITY_THRESHOLD (500)
+
+// This definition defines the total amount of measurements
+// until the test collected a good amount of data
+#define MAX_MEASURE (10)
+
+
+
+/**
+ * @brief This struct contains information about the water measurement
+ */
+typedef struct water_sensor_data_t{
+    /// Maximum capacity
+    int max;
+
+    /// Minimum capacity
+    int min;
+
+    /// Current value
+    int current;
+} water_sensor_data;
+
+/**
+ * @brief This struct contains information about the device
+ */
+typedef struct device_data_t{
+    /// Name of the device
+	const char* name;
+
+    /// UUID of the device
+	const char* id;
+
+    /// Current battery voltage in percent
+    unsigned short battery;
+} device_data;
+
+/**
+ * @brief This sturct contains the location of the device
+ */
+typedef struct location_data_t{
+    /// Longitude of the location
+    long longitude;
+
+    /// Langitude of the location
+    long latitude;
+}location_data;
+
+
+VL53L0X sensor;
+water_sensor_data* water_data_m;
+device_data* device_data_m;
+location_data* location_data_m;
+
+/**
+ * @brief Initializes the water measurement
+ * 
+ * @param retries Amount of retries until the initialization fails, default 10
+ * @return When the component is initialized true will be returned.
+ */
+void initializeWaterSensor(int retries = 10){
+    LOGn("[VL53L0X] Initialize sensor");
+    LOGn("[VL53L0X] Start I2C wire");
+    Wire.begin();
+    Wire.setPins(VL_SCK_PIN, VL_SCL_PIN);
+
+    sensor.setTimeout(500);
+    for(int i = 0; i < retries; ++i){
+        LOG("[VL53L0X] Current attempt %i: ", i);
+        if(sensor.init()){
+            LOGn("Successful initialized");
+            sensor.setTimeout(500);
+            sensor.setMeasurementTimingBudget(200000);
+            sensor.setSignalRateLimit(0.5); 
+            sensor.startContinuous();
+            return;
+        }
+        LOGn("Failed");
+        delay(500);
+    }
+    
+    LOGn("[VL53L0X] Cannot initialize sensor");
+}
+
+// TODO Remove this guards
+#ifdef LORA_ACTIVE
+
+/**
+ * @brief Initializes the LoRa component
+ * This method sets all lora pins and the syncword too. 
+ * After setting all attributes the LoRa module is started. 
+ * @param retries Amount of retries until the initializiation fails, default 10
+ */
+void initializeLoRa(int retries = 10){
+    LOGn("[LoRa] Initialize module");
+    LoRa.setPins(LORA_PIN_SS, LORA_PIN_RST, LORA_PIN_DIO);
+    LoRa.setSyncWord(LORA_SYNC_WORD);
+    
+    LOGn("[LoRa] Lora Setup");
+    LOGn("[LoRa] Pin SS:  %i", LORA_PIN_SS);
+    LOGn("[LoRa] Pin RST: %i", LORA_PIN_RST);
+    LOGn("[LoRa] Pin DI0: %i", LORA_PIN_DIO);
+    LOGn("[LoRa] Region: %i", LORA_REGION);
+    LOGn("[LoRa] Syncword: %i", LORA_SYNC_WORD);
+
+    for(int i = 0; i < retries; ++i){
+        LOGn("[LoRa] Current attempt: %i", i);
+        if(LoRa.begin(LORA_REGION)){
+            return;
+        }
+        
+        delay(500);
+
+    }
+    
+    LOGn("[LoRa] Cannot initialize LoRa");
+
+}
+#endif // LORA_ACTIVE
+
+
+void setup() { 
+    // Setup variables
+    water_data_m = (water_sensor_data*) malloc(sizeof(water_sensor_data));
+    device_data_m = (device_data*) malloc(sizeof(device_data));
+    location_data_m = (location_data*) malloc(sizeof(location_data));
+
+    // Device name e.g. SouthWest001
+    device_data_m->name = "Test Device 0001";
+    // UUID e.g. 688b7fb2-92d1-49bb-93bc-2212979ad6ca
+    device_data_m->id = "688b7fb2-92d1-49bb-93bc-2212979ad6ca";
+
+    // GPS Coordinates
+    location_data_m->latitude = 0;
+    location_data_m->longitude = 0;
+
+    // Waterlevel, e.g. watertank boundaries
+    water_data_m->max = 15 * 10;
+    water_data_m->min = 0;
+
+
+    Serial.begin(115200);
+    initializeWaterSensor();
+    initializeLoRa();
+    // initialize_water_sensor
+}
+
+/**
+ * @brief Reads a water level and stores the value inside the water_data_m attribute
+ * A range test is used for the measurement, the VL53L0X starts a ranging test.
+ * After each test the value is added to a temporary variable. Before assigning
+ * a value to the water_data_m attribute the temporary sum is divided by the 
+ * amount of measurements. 
+ * NOTE 
+ * - The MAX_MEASURE definition controls how many measurements are done.
+ * - When an invalid sum is yield the VL530X will be reinitialized and the
+ *      measurement is done again.
+ */
+void readWaterLevel(){
+    LOG("[VL53L0X]Reading water level");
+
+    int sum = 0;
+    for(int i = 0; i < VL_MEASUREMENTS_AMOUNT; ++i){
+        if (!sensor.timeoutOccurred()) { 
+            sum += sensor.readRangeContinuousMillimeters() * DISTANCE_CALIBRATION_VALUE;
+        }
+    }
+
+    int distance = sum / VL_MEASUREMENTS_AMOUNT;
+
+    // Measured is the distance how long the light travels until it reaches the water surface
+    // => The mapped percentage is the water/air ratio, to achieve the remaining water percentage
+    //      the mapped value is subtracted from 100%
+    water_data_m->current = 100 - map(distance, water_data_m->min, water_data_m->max, 0, 100);
+}
+
+/**
+ * @brief Reads the battery voltage and stores the value inside the device_data_m attribute
+ * 
+ */
+void readBattery(){
+    LOG("[BATTERY] Read battery");
+    float current_battery_voltage = analogRead(BATTERY_PIN);
+    int mapped_voltage = map(current_battery_voltage, 0, 4096, 0, 210);
+    float actual_volt = ((float)mapped_voltage / 100) * 2;
+    float voltagePercentage = (actual_volt / MAX_VOLTAGE) * 100; 
+    Serial.println(voltagePercentage);
+    device_data_m->battery = voltagePercentage;  
+    
+return; // TODO remove
+    // To ensure an under-voltage protection the esp will go into the deepsleep
+    // The master device is notified 10 times with an urgent message
+    if(actual_volt <= 3.3){ 
+        device_data_m->battery = 0;
+        for(int i = 0; i < 10; ++i){
+            notifyServer();
+            delay(1000);
+        }
+        esp_deep_sleep_start();
+    }
+}
+
+/**
+ * @brief Sends a json document to the LoRa receiver.
+ * The JSON object contains of the following elements
+ * - device: Device information
+ *      - name: Name of the device
+ *      - id: UUID of the device
+ *      - battery: current battery value
+ * - water: Information about the water value
+ *      - min: Minimum of water 
+ *      - max: Maximum water capacity
+ *      - current: Current water level 
+ * - location: GPS location of this device
+ *      - long: Longitude
+ *      - lat: Latitude
+ */
+void notifyServer(){
+    LOGn("[NOTIFY] Sending data to master device");
+    char buffer[1024];
+    sprintf(buffer, "{\"device\":{\"name\":\"%s\",\"id\":\"%s\",\"battery\":%d},\"water\":{\"max\":%d,\"min\":%d,\"current\":%d},\"location\":{\"long\":%ld,\"lat\":%ld}}",
+    device_data_m->name, device_data_m->id, device_data_m->battery,
+    water_data_m->max, water_data_m->min, water_data_m->current,
+    location_data_m->longitude, location_data_m->latitude);
+
+#ifdef LORA_ACTIVE  // TODO remove guards
+    size_t bufferSize = strlen(buffer);
+    LoRa.beginPacket();
+    LoRa.print(buffer);
+    LoRa.endPacket();
+#endif
+}
+
+/* Todo uncomment when production
+void LOGn(const char *fmt, ...) {
+    char buff[1024];
+    va_list pargs;
+    va_start(pargs, fmt);
+    vsnprintf(buff, 1024, fmt, pargs);
+    va_end(pargs);
+    Serial.println(buff);
+}
+*/
+void loop() {
+    
+    readBattery();
+    readWaterLevel();
+    notifyServer();
+    delay(ACTIVITY_THRESHOLD);    
+}

@@ -1,0 +1,17 @@
+{
+    "files.associations": {
+        "array": "cpp",
+        "deque": "cpp",
+        "string": "cpp",
+        "unordered_map": "cpp",
+        "vector": "cpp",
+        "initializer_list": "cpp",
+        "adafruit_vl53l0x.h": "c",
+        "haevnnotifier.h": "c",
+        "regex": "c",
+        "stdarg.h": "c",
+        "*.tcc": "cpp",
+        "memory": "cpp",
+        "random": "cpp"
+    }
+}
