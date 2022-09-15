@@ -21,7 +21,7 @@
 #define DAY (24 * HOUR)
 
 // Controls when the device should measure and notify the server
-// For production remove line 42 and 44 uncomment line 43
+// For production remove line 24 - 25 and uncomment line 26
 //#define ACTIVITY_THRESHOLD (5 * MINUTE) 
 #define ACTIVITY_THRESHOLD (500)
 
@@ -91,11 +91,21 @@ void setup() {
 
 
     Serial.begin(115200);
-    
+
     initialize_lora_module();
     initialize_water_sensor_module();
+    LOGn("[SETUP  ] Device Configuration");
+    LOGn("[SETUP  ] Device name: %s", device_data_m.name);
+    LOGn("[SETUP  ] Device UUID: %s", device_data_m.id);
+    LOGn("[SETUP  ] longitude  : %d", location_data_m.longitude);
+    LOGn("[SETUP  ] latitude   : %d", location_data_m.latitude);
+    LOGn("[SETUP  ] water min  : %d", water_data_m.min);
+    LOGn("[SETUP  ] water max  : %d", water_data_m.max);
 
-      setupAndStartWebServer([](AsyncWebServerRequest *request){
+
+    // TODO 
+    // REMOVE WHEN PRODUCTION
+    setupAndStartWebServer([](AsyncWebServerRequest* request){
         char buff[1024];
         //sprintf(buff, "<html><head><meta http-equiv=\"refresh\" content=\"1\"></head><body><h1 style=\"text-align: center;\">Current water value: %i<h1><h1 style=\"text-align: center;\">Current voltage value: %i<h1></body></html>", water_data_m.current, device_data_m.battery);
         sprintf(buff, "<html><head><meta http-equiv=\"refresh\" content=\"1\"><style>.center {margin: auto;border: 3px solid #73AD21;padding: 10px;}</style></head><body><div class=\"center\"><h1>Device</h1><p>Name: %s</p><p>UUID: %s</p><p>Battery: %d</p></div><div class=\"center\"><h1>Water</h1><p>Max: %d</p><p>Min: %d</p><p>Current: %d</p></div><div class=\"center\"><h1>Location</h1><p>Lat: %ld</p><p>Long: %ld</p></div></body></html>",
@@ -105,6 +115,7 @@ void setup() {
         request->send(200, "text/html", buff);
     });
 }
+
 /**
  * @brief Measures the voltage supplied by the voltage divider.
  * After the measurement the measured value is mapped to the battery capacity
@@ -138,7 +149,7 @@ int measure_battery(){
  */
 void send_data(){
     LOGn("[NOTIFY] Sending data to master device");
-    char buffer[1024] = {0};
+    char buffer[255] = {0};
     sprintf(buffer, "{\"device\":{\"name\":\"%s\",\"id\":\"%s\",\"battery\":%d},\"water\":{\"max\":%d,\"min\":%d,\"current\":%d},\"location\":{\"long\":%ld,\"lat\":%ld}}",
     device_data_m.name, device_data_m.id, device_data_m.battery,
     water_data_m.max, water_data_m.min, water_data_m.current,
@@ -147,15 +158,13 @@ void send_data(){
 }
 
 /**
- * @brief Broadcast a message
- * A message contains a string and a code
+ * @brief Broadcast an error code
  *  
- * @param message Message to send
  * @param code Code associated with the message, ranging from 0 to 255.
  */
-void send_message(const char* message, int code){
-    char buffer[1024] = {0};
-    sprintf(buffer, "{\"error\":{\"code\":%i,\"message\":\"%s\"},\"device\":{\"name\":\"%s\",\"id\":\"%s\",\"battery\":%d},\"location\":{\"long\":%ld,\"lat\":%ld}}",
+void send_code(int code){
+    char buffer[255] = {0};
+    sprintf(buffer, "{\"error_code\":%i,\"device\":{\"name\":\"%s\",\"id\":\"%s\",\"battery\":%d},\"location\":{\"long\":%ld,\"lat\":%ld}}",
     code, message,
     device_data_m.name, device_data_m.id, device_data_m.battery,
     location_data_m.longitude, location_data_m.latitude);
@@ -174,7 +183,7 @@ void loop() {
     if(false && device_data_m.battery  <= 3.3){ 
         device_data_m.battery = 0;
         for(int i = 0; i < 10; ++i){
-            send_message("NOT ENOUGH BATTERY. Shutdown initiated to avoid hardware damage.", 0xDE);
+            send_code(0xDE);
             delay(1000);
         }
         esp_deep_sleep_start();

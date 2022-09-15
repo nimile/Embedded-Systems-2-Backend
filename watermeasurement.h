@@ -11,7 +11,10 @@
 
 #define SCK_PIN 21
 #define SCL_PIN 22
-
+#define WATER_READ_TIMEOUT 500
+#define WATER_MEASUREMENT_TIMING_BUDGET 200000
+#define WATER_SIGNAL_RATE_LIMIT 0.5
+ 
 
 extern void LOGn(const char *fmt, ...);
 
@@ -39,28 +42,43 @@ VL53L0X water_sensor;
  * @return When the component is initialized true will be returned.
  */
 bool initialize_water_sensor_module(int retries = 10){
-    LOGn("[VL53L0X] Initialize water_sensor");
+    bool result = false;
+    LOGn("[VL53L0X] Initialize module");
+
     LOGn("[VL53L0X] Start I2C wire");
     Wire.begin();
     Wire.setPins(SCK_PIN, SCL_PIN);
 
+    LOGn("[VL53L0X] Module settings");
+    LOGn("[VL53L0X] Pin SCK:             %i", SCK_PIN);
+    LOGn("[VL53L0X] Pin SCL:             %i", SCL_PIN);
+    LOGn("[VL53L0X] Read timeout:        %i", WATER_READ_TIMEOUT);
+    LOGn("[VL53L0X] timing budget:       %i", WATER_MEASUREMENT_TIMING_BUDGET);
+    LOGn("[VL53L0X] signal rate limit:   %i", WATER_SIGNAL_RATE_LIMIT);
+    LOGn("[VL53L0X] Calibration:         %i", DISTANCE_CALIBRATION_VALUE);
+    LOGn("[VL53L0X] amount measurements: %i", AMOUNT_MEASUREMENTS);
+
+    
+    LOGn("[VL53L0X] Start initialization, max retries are %i", retries);
     water_sensor.setTimeout(500);
     for(int i = 0; i < retries; ++i){
         LOGn("[VL53L0X] Current attempt %i: ", i);
-        if(water_sensor.init()){
-            LOGn("Successful initialized");
-            water_sensor.setTimeout(500);
-            water_sensor.setMeasurementTimingBudget(200000);
-            water_sensor.setSignalRateLimit(0.5); 
-            water_sensor.startContinuous();
-            return true;
-        }
-        LOGn("Failed");
         delay(500);
+        if(water_sensor.init()){
+            water_sensor.setTimeout(WATER_READ_TIMEOUT);
+            water_sensor.setMeasurementTimingBudget(WATER_MEASUREMENT_TIMING_BUDGET);
+            water_sensor.setSignalRateLimit(WATER_SIGNAL_RATE_LIMIT); 
+            water_sensor.startContinuous();
+            result = true;
+        }
     }
     
-    LOGn("[VL53L0X] Cannot initialize water_sensor");
-    return false;
+    if(result){
+        LOGn("[VL53L0X] Module initialized");
+    }else{
+        LOGn("[VL53L0X] Module initialization failed");
+    }
+    return result;
 }
 
 /**
