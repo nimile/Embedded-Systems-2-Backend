@@ -8,8 +8,6 @@
 #include "watermeasurement.h"
 #include "loracom.h"
 
-#include <HaevnNotifier.h>
-
 #define BATTERY_PIN 34
 #define MAX_VOLTAGE (4.2)
 
@@ -32,7 +30,7 @@
  * @param fmt Format
  * @param ... arguments
  */
-/*void LOGn(const char *fmt, ...) {
+void LOGn(const char *fmt, ...) {
 #ifdef DEBUG
     char buff[1024];
     va_list pargs;
@@ -42,7 +40,7 @@
     Serial.println(buff);
 #endif
 }
-*/
+
 
 
 /**
@@ -101,19 +99,6 @@ void setup() {
     LOGn("[SETUP  ] latitude   : %d", location_data_m.latitude);
     LOGn("[SETUP  ] water min  : %d", water_data_m.min);
     LOGn("[SETUP  ] water max  : %d", water_data_m.max);
-
-
-    // TODO 
-    // REMOVE WHEN PRODUCTION
-    setupAndStartWebServer([](AsyncWebServerRequest* request){
-        char buff[1024];
-        //sprintf(buff, "<html><head><meta http-equiv=\"refresh\" content=\"1\"></head><body><h1 style=\"text-align: center;\">Current water value: %i<h1><h1 style=\"text-align: center;\">Current voltage value: %i<h1></body></html>", water_data_m.current, device_data_m.battery);
-        sprintf(buff, "<html><head><meta http-equiv=\"refresh\" content=\"1\"><style>.center {margin: auto;border: 3px solid #73AD21;padding: 10px;}</style></head><body><div class=\"center\"><h1>Device</h1><p>Name: %s</p><p>UUID: %s</p><p>Battery: %d</p></div><div class=\"center\"><h1>Water</h1><p>Max: %d</p><p>Min: %d</p><p>Current: %d</p></div><div class=\"center\"><h1>Location</h1><p>Lat: %ld</p><p>Long: %ld</p></div></body></html>",
-            device_data_m.name, device_data_m.id, device_data_m.battery,
-            water_data_m.max, water_data_m.min, water_data_m.current,
-            location_data_m.longitude, location_data_m.latitude);
-        request->send(200, "text/html", buff);
-    });
 }
 
 /**
@@ -180,7 +165,7 @@ void loop() {
     
     // To ensure an under-voltage protection the esp will go into the deepsleep
     // The master device is notified 10 times with an urgent message
-    if(false && device_data_m.battery  <= 3.3){ 
+    if(false && device_data_m.battery  <= 3.3){  
         device_data_m.battery = 0;
         for(int i = 0; i < 10; ++i){
             send_code(0xDE);
