@@ -5,14 +5,12 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
-import java.security.interfaces.RSAKey;
-
 @EnableConfigurationProperties(RsaKeyProperties.class)
 @SpringBootApplication
 public class XilabApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(XilabApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(XilabApplication.class, args);
+    }
 
 }

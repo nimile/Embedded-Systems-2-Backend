@@ -10,6 +10,7 @@ import java.util.Optional;
 @Repository
 public interface DeviceRepository extends CrudRepository<DeviceWrapper, Integer> {
     List<DeviceWrapper> findAll();
+
     Optional<DeviceWrapper> findByUuid(String uuid);
 
 }

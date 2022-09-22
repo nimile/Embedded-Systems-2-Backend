@@ -25,6 +25,8 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfiguration {
 
+    private final RsaKeyProperties rsaKeys;
+
     public SecurityConfiguration(RsaKeyProperties rsaKeys) {
         this.rsaKeys = rsaKeys;
     }
@@ -32,7 +34,7 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-               // .csrf(csrf -> csrf.disable())
+                // .csrf(csrf -> csrf.disable())
                 .authorizeRequests(request -> request
                         .mvcMatchers("/admin/**").authenticated()
                         .mvcMatchers("/device/**").permitAll()
@@ -42,8 +44,6 @@ public class SecurityConfiguration {
                 .httpBasic(Customizer.withDefaults())
                 .build();
     }
-
-    private final RsaKeyProperties rsaKeys;
 
     @Bean
     public JwtDecoder jwtDecoder() {

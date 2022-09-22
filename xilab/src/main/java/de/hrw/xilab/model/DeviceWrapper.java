@@ -8,11 +8,36 @@ import javax.persistence.*;
 @Entity
 @Table(name = "DeviceWrapper")
 public class DeviceWrapper {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+    private String name;
+    private String uuid;
+    private int battery;
+    private long latitude;
+    private long longitude;
+    private int max;
+    private int min;
+    private int current;
     public DeviceWrapper() {
 
     }
 
-    public static Device toDevice(DeviceWrapper wrapperDevice){
+    private DeviceWrapper(Device device) {
+        name = device.getDeviceData().getName();
+        uuid = device.getDeviceData().getUuid();
+        battery = device.getDeviceData().getBattery();
+
+        latitude = device.getLocationData().getLatitude();
+        longitude = device.getLocationData().getLongitude();
+
+
+        max = device.getWaterSensorData().getMax();
+        min = device.getWaterSensorData().getMin();
+        current = device.getWaterSensorData().getCurrent();
+    }
+
+    public static Device toDevice(DeviceWrapper wrapperDevice) {
         var device = new Device();
         DeviceData deviceData = new DeviceData();
         LocationData locationData = new LocationData();
@@ -35,37 +60,9 @@ public class DeviceWrapper {
         return device;
     }
 
-    public static DeviceWrapper toDeviceWrapper(Device device){
+    public static DeviceWrapper toDeviceWrapper(Device device) {
         return new DeviceWrapper(device);
     }
-
-    private DeviceWrapper(Device device){
-        name = device.getDeviceData().getName();
-        uuid = device.getDeviceData().getUuid();
-        battery = device.getDeviceData().getBattery();
-
-        latitude = device.getLocationData().getLatitude();
-        longitude = device.getLocationData().getLongitude();
-
-
-        max = device.getWaterSensorData().getMax();;
-        min = device.getWaterSensorData().getMin();
-        current = device.getWaterSensorData().getCurrent();
-    }
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-    private String name;
-    private String uuid;
-    private int battery;
-
-    private long latitude;
-    private long longitude;
-
-    private int max;
-    private int min;
-    private int current;
 
     public static DeviceWrapper updateDeviceWrapper(DeviceWrapper target, Device device) {
         DeviceWrapper dw = new DeviceWrapper();
