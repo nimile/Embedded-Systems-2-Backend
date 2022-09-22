@@ -2,21 +2,22 @@ package de.hrw.xilab.services;
 
 import de.hrw.xilab.model.Device;
 import de.hrw.xilab.model.DeviceWrapper;
+import de.hrw.xilab.model.UpdateDeviceWrapper;
 import de.hrw.xilab.repository.DeviceRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 @Service
 public class DeviceService {
 
-    @Autowired
-    private DeviceRepository repository;
+    private final DeviceRepository repository;
 
-    public DeviceService(){
-
+    public DeviceService(DeviceRepository repository){
+        this.repository = repository;
     }
 
     public List<Device> findAll(){
@@ -73,8 +74,69 @@ public class DeviceService {
         return uuid;
     }
 
-    public void update(DeviceWrapper deviceWrapper) {
-        var data = repository.findByUuid(deviceWrapper.getUuid()).orElseThrow();
-        repository.save(deviceWrapper);
+    public void update(Device device) {
+        var deviceWrapper = DeviceWrapper.toDeviceWrapper(device);
+        var target = repository.findByUuid(deviceWrapper.getUuid()).orElseThrow();
+        target = DeviceWrapper.updateDeviceWrapper(target, device);
+        repository.save(target);
+    }
+    public void update(UpdateDeviceWrapper device) {
+        var target = repository.findByUuid(device.getUuid()).orElseThrow();
+        target = UpdateDeviceWrapper.getDevice(target, device);
+        repository.save(target);
+    }
+
+    public List<Device> filter(Optional<String> name,
+                         Optional<String> uuid,
+                         Optional<Long> battery,
+                         Optional<Double> latitude,
+                         Optional<Double> longitude,
+                         Optional<Long> min,
+                         Optional<Long> max,
+                         Optional<Long> current) {
+        Predicate<DeviceWrapper> nameFilter = device -> true;
+        Predicate<DeviceWrapper> uuidFilter = device -> true;
+        Predicate<DeviceWrapper> batteryFilter = device -> true;
+        Predicate<DeviceWrapper> latitudeFilter = device -> true;
+        Predicate<DeviceWrapper> longitudeFilter = device -> true;
+        Predicate<DeviceWrapper> minFilter = device -> true;
+        Predicate<DeviceWrapper> maxFilter = device -> true;
+        Predicate<DeviceWrapper> currentFilter = device -> true;
+
+        if(name.isPresent()){
+            nameFilter = device -> device.getName().contains(name.get());
+        }
+        if(uuid.isPresent()){
+            uuidFilter = device -> device.getUuid().equals(uuid.get());
+        }
+        if(battery.isPresent()){
+            batteryFilter = device -> device.getBattery() <= battery.get();
+        }
+        if(latitude.isPresent()){
+            latitudeFilter = device -> device.getLatitude() == latitude.get();
+        }
+        if(longitude.isPresent()){
+            longitudeFilter = device -> device.getLongitude() == longitude.get();
+        }
+        if(max.isPresent()){
+            maxFilter = device -> device.getMax() == max.get();
+        }
+        if(min.isPresent()){
+            minFilter = device -> device.getMin() == min.get();
+        }
+        if(current.isPresent()){
+            currentFilter = device -> device.getCurrent() == current.get();
+        }
+
+        return repository.findAll().stream()
+                .filter(uuidFilter)
+                .filter(nameFilter)
+                .filter(batteryFilter)
+                .filter(longitudeFilter)
+                .filter(latitudeFilter)
+                .filter(minFilter)
+                .filter(maxFilter)
+                .filter(currentFilter)
+                .map(DeviceWrapper::toDevice).toList();
     }
 }

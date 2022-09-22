@@ -66,4 +66,21 @@ public class DeviceWrapper {
     private int max;
     private int min;
     private int current;
+
+    public static DeviceWrapper updateDeviceWrapper(DeviceWrapper target, Device device) {
+        DeviceWrapper dw = new DeviceWrapper();
+        dw.id = target.id;
+        dw.uuid = target.uuid;
+        dw.name = device.getDeviceData().getName();
+        dw.battery = device.getDeviceData().getBattery();
+
+        dw.latitude = device.getLocationData().getLatitude();
+        dw.longitude = device.getLocationData().getLongitude();
+
+        dw.max = device.getWaterSensorData().getMax();
+        dw.min = device.getWaterSensorData().getMin();
+        dw.current = device.getWaterSensorData().getCurrent();
+
+        return dw;
+    }
 }

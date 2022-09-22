@@ -1,34 +1,31 @@
 package de.hrw.xilab.controller;
 
 
-import antlr.Token;
 import de.hrw.xilab.model.Device;
 import de.hrw.xilab.model.DeviceWrapper;
 import de.hrw.xilab.services.DeviceService;
 import de.hrw.xilab.services.TokenService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
 @RestApiController("/admin")
 public class AdminController {
-    // TODO Add login
-    @Autowired
-    public DeviceService deviceService;
 
-    @Autowired
-    private TokenService tokenService;
+    public final DeviceService deviceService;
+    private final TokenService tokenService;
+
+    public AdminController(DeviceService deviceService, TokenService tokenService) {
+        this.deviceService = deviceService;
+        this.tokenService = tokenService;
+    }
 
     @PostMapping(path = "/token")
     public String token(Authentication authentication){
-        String token = tokenService.generateToken(authentication);
-        System.out.println(token);
-        return token;
+        return tokenService.generateToken(authentication);
     }
 
 
@@ -45,11 +42,10 @@ public class AdminController {
     }
 
     @PatchMapping(path = "/patch")
-    public ResponseEntity<String> patchDevice(@RequestBody Optional<DeviceWrapper> device){
+    public ResponseEntity<String> patchDevice(@RequestBody Optional<Device> device){
         deviceService.update(device.orElseThrow());
         return ResponseEntity.ok().build();
     }
-
 
 
     @DeleteMapping(path = "/remove/device")
@@ -65,10 +61,9 @@ public class AdminController {
     }
 
 
-
     @PostMapping(path = "/new/device")
     public ResponseEntity<String> postDevice(@RequestBody Optional<Device> device){
-            deviceService.save(device.orElseThrow());
+        deviceService.save(device.orElseThrow());
         return ResponseEntity.ok().build();
     }
 

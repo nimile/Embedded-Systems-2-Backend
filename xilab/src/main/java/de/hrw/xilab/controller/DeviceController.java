@@ -1,8 +1,8 @@
 package de.hrw.xilab.controller;
 
 import de.hrw.xilab.model.Device;
+import de.hrw.xilab.model.UpdateDeviceWrapper;
 import de.hrw.xilab.services.DeviceService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,8 +12,11 @@ import java.util.Optional;
 @RestApiController("/device")
 public class DeviceController {
 
-    @Autowired
-    public DeviceService deviceService;
+    public final DeviceService deviceService;
+
+    public DeviceController(DeviceService deviceService) {
+        this.deviceService = deviceService;
+    }
 
     @GetMapping(path = "/all")
     public ResponseEntity<List<Device>> getDevices(){
@@ -40,5 +43,20 @@ public class DeviceController {
         return ResponseEntity.ok(result);
     }
 
+    @GetMapping(path="/filter")
+    public ResponseEntity<List<Device>> filter(@RequestParam Optional<String> name,
+                                               @RequestParam Optional<String> uuid,
+                                               @RequestParam Optional<Long> battery,
+                                               @RequestParam Optional<Double> latitude,
+                                               @RequestParam Optional<Double> longitude,
+                                               @RequestParam Optional<Long> min,
+                                               @RequestParam Optional<Long> max,
+                                               @RequestParam Optional<Long> current){
+        return  ResponseEntity.ok(deviceService.filter(name, uuid, battery, latitude, longitude, min, max, current));
+    }
 
+    @PatchMapping(path = "/update")
+    public void updateDevice(@RequestBody UpdateDeviceWrapper updateDeviceWrapper){
+        deviceService.update(updateDeviceWrapper);
+    }
 }
