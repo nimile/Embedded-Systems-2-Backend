@@ -45,14 +45,13 @@ public class DeviceController {
 
     @GetMapping(path = "/filter")
     public ResponseEntity<List<Device>> filter(@RequestParam Optional<String> name,
-                                               @RequestParam Optional<String> uuid,
                                                @RequestParam Optional<Long> battery,
                                                @RequestParam Optional<Double> latitude,
                                                @RequestParam Optional<Double> longitude,
                                                @RequestParam Optional<Long> min,
                                                @RequestParam Optional<Long> max,
                                                @RequestParam Optional<Long> current) {
-        return ResponseEntity.ok(deviceService.filter(name, uuid, battery, latitude, longitude, min, max, current));
+        return ResponseEntity.ok(deviceService.filter(name, battery, latitude, longitude, min, max, current));
     }
 
     @PatchMapping(path = "/update")

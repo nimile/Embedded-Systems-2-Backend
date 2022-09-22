@@ -89,7 +89,6 @@ public class DeviceService {
     }
 
     public List<Device> filter(Optional<String> name,
-                               Optional<String> uuid,
                                Optional<Long> battery,
                                Optional<Double> latitude,
                                Optional<Double> longitude,
@@ -97,7 +96,6 @@ public class DeviceService {
                                Optional<Long> max,
                                Optional<Long> current) {
         Predicate<DeviceWrapper> nameFilter = device -> true;
-        Predicate<DeviceWrapper> uuidFilter = device -> true;
         Predicate<DeviceWrapper> batteryFilter = device -> true;
         Predicate<DeviceWrapper> latitudeFilter = device -> true;
         Predicate<DeviceWrapper> longitudeFilter = device -> true;
@@ -107,9 +105,6 @@ public class DeviceService {
 
         if (name.isPresent()) {
             nameFilter = device -> device.getName().contains(name.get());
-        }
-        if (uuid.isPresent()) {
-            uuidFilter = device -> device.getUuid().equals(uuid.get());
         }
         if (battery.isPresent()) {
             batteryFilter = device -> device.getBattery() <= battery.get();
@@ -131,7 +126,6 @@ public class DeviceService {
         }
 
         return repository.findAll().stream()
-                .filter(uuidFilter)
                 .filter(nameFilter)
                 .filter(batteryFilter)
                 .filter(longitudeFilter)
