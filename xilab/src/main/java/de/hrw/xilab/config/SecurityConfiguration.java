@@ -37,6 +37,7 @@ public class SecurityConfiguration {
                 // .csrf(csrf -> csrf.disable())
                 .authorizeRequests(request -> request
                         .mvcMatchers("/admin/**").authenticated()
+                        .mvcMatchers("/test/**").authenticated()
                         .mvcMatchers("/device/**").permitAll()
                         .anyRequest().denyAll())
                 .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
