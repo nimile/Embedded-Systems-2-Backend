@@ -1,6 +1,6 @@
 package de.hrw.xilab.repository;
 
-import de.hrw.xilab.model.DeviceWrapper;
+import de.hrw.xilab.model.wrapper.DeviceWrapper;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -12,5 +12,4 @@ public interface DeviceRepository extends CrudRepository<DeviceWrapper, Integer>
     List<DeviceWrapper> findAll();
 
     Optional<DeviceWrapper> findByUuid(String uuid);
-
 }

@@ -1,4 +1,4 @@
-package de.hrw.xilab.model;
+package de.hrw.xilab.model.api;
 
 import lombok.Data;
 

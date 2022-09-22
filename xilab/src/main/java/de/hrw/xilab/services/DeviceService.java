@@ -1,15 +1,17 @@
 package de.hrw.xilab.services;
 
-import de.hrw.xilab.model.Device;
-import de.hrw.xilab.model.DeviceWrapper;
-import de.hrw.xilab.model.UpdateDeviceWrapper;
+import de.hrw.xilab.model.api.Device;
+import de.hrw.xilab.model.wrapper.DeviceWrapper;
 import de.hrw.xilab.repository.DeviceRepository;
+import de.hrw.xilab.util.ModelUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
+
+import static de.hrw.xilab.util.ModelUtils.toDeviceWrapperFromDevice;
 
 @Service
 public class DeviceService {
@@ -20,42 +22,44 @@ public class DeviceService {
         this.repository = repository;
     }
 
+
+    public void save(Device device) {
+        repository.save(toDeviceWrapperFromDevice(device));
+    }
+
+    public void saveAll(List<Device> devices) {
+        var out = devices.stream()
+                .map(ModelUtils::toDeviceWrapperFromDevice)
+                .toList();
+        repository.saveAll(out);
+    }
+
+
     public List<Device> findAll() {
         return repository.findAll().stream()
-                .map(DeviceWrapper::toDevice)
+                .map(ModelUtils::toDeviceFromDeviceWrapper)
                 .toList();
     }
 
     public Device findByUuid(String uuid) {
         var device = repository.findByUuid(uuid).orElseThrow();
-        return DeviceWrapper.toDevice(device);
+        return ModelUtils.toDeviceFromDeviceWrapper(device);
     }
 
-    public void save(Device device) {
-        var out = DeviceWrapper.toDeviceWrapper(device);
-        repository.save(out);
-    }
-
-    public void saveAll(List<Device> devices) {
-        var out = devices.stream()
-                .map(DeviceWrapper::toDeviceWrapper)
-                .toList();
-        repository.saveAll(out);
-    }
-
-    public List<Device> findAllByBattery(double battery) {
+    public List<Device> findAllByBatteryBelow(double battery) {
         return repository.findAll().stream()
                 .filter(deviceWrapper -> deviceWrapper.getBattery() <= battery)
-                .map(DeviceWrapper::toDevice)
+                .map(ModelUtils::toDeviceFromDeviceWrapper)
                 .toList();
     }
 
     public List<Device> findAllByMinimumWaterReached() {
         return repository.findAll().stream()
                 .filter(deviceWrapper -> deviceWrapper.getMin() >= deviceWrapper.getCurrent())
-                .map(DeviceWrapper::toDevice)
+                .map(ModelUtils::toDeviceFromDeviceWrapper)
                 .toList();
     }
+
 
     public List<String> deleteByUuidList(List<String> uuids) {
         List<String> removed = new ArrayList<>();
@@ -69,24 +73,31 @@ public class DeviceService {
         return removed;
     }
 
-    public String deleteByUuid(String uuid) {
+    public void deleteByUuid(String uuid) {
         var id = repository.findByUuid(uuid).orElseThrow().getId();
         repository.deleteById(id);
-        return uuid;
     }
+
 
     public void update(Device device) {
-        var deviceWrapper = DeviceWrapper.toDeviceWrapper(device);
-        var target = repository.findByUuid(deviceWrapper.getUuid()).orElseThrow();
-        target = DeviceWrapper.updateDeviceWrapper(target, device);
-        repository.save(target);
+        String uuid = device.getDeviceData().getUuid();
+        findByUuid(uuid);
+        save(device);
     }
 
-    public void update(UpdateDeviceWrapper device) {
-        var target = repository.findByUuid(device.getUuid()).orElseThrow();
-        target = UpdateDeviceWrapper.getDevice(target, device);
-        repository.save(target);
+    public void update(String uuid, Optional<Integer> battery, Optional<Integer> waterlevel) {
+        var dataset = repository.findByUuid(uuid).orElseThrow();
+        battery.ifPresent(dataset::setBattery);
+        waterlevel.ifPresent(dataset::setCurrent);
+        repository.save(dataset);
     }
+
+
+
+
+
+
+
 
     public List<Device> filter(Optional<String> name,
                                Optional<Long> battery,
@@ -133,6 +144,7 @@ public class DeviceService {
                 .filter(minFilter)
                 .filter(maxFilter)
                 .filter(currentFilter)
-                .map(DeviceWrapper::toDevice).toList();
+                .map(ModelUtils::toDeviceFromDeviceWrapper).toList();
     }
+
 }

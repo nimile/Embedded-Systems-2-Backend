@@ -1,15 +1,11 @@
 package de.hrw.xilab.controller;
 
 
-import de.hrw.xilab.model.Device;
+import de.hrw.xilab.model.TokenResult;
 import de.hrw.xilab.services.DeviceService;
 import de.hrw.xilab.services.TokenService;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Optional;
 
 @RestApiController("/token")
 public class TokenController {
@@ -22,14 +18,13 @@ public class TokenController {
         this.tokenService = tokenService;
     }
 
-    @PostMapping(path = "/create")
-    public String token(Authentication authentication) {
+    @GetMapping(path = "/create")
+    public TokenResult token(Authentication authentication) {
         return tokenService.generateToken(authentication);
     }
 
-    @PostMapping(path = "/renew")
-    public String renew(Authentication authentication) {
+    @GetMapping(path = "/renew")
+    public TokenResult renew(Authentication authentication) {
         return tokenService.generateToken(authentication);
     }
-
 }

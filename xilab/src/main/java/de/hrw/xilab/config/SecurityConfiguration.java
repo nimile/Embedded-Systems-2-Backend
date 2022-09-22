@@ -6,6 +6,7 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -27,6 +28,11 @@ public class SecurityConfiguration {
 
     private final RsaKeyProperties rsaKeys;
 
+    @Value("${security.user}")
+    private String user;
+
+    @Value("${security.password}")
+    private String password;
     public SecurityConfiguration(RsaKeyProperties rsaKeys) {
         this.rsaKeys = rsaKeys;
     }
@@ -37,7 +43,6 @@ public class SecurityConfiguration {
                 // .csrf(csrf -> csrf.disable())
                 .authorizeRequests(request -> request
                         .mvcMatchers("/admin/**").authenticated()
-                        .mvcMatchers("/test/**").authenticated()
                         .mvcMatchers("/device/**").permitAll()
                         .mvcMatchers("/token/**").permitAll())
                 .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
@@ -54,8 +59,8 @@ public class SecurityConfiguration {
     @Bean
     public InMemoryUserDetailsManager user() {
         return new InMemoryUserDetailsManager(
-                User.withUsername("app")
-                        .password("{noop}1234")
+                User.withUsername(user)
+                        .password(password)
                         .authorities("read")
                         .build());
     }
