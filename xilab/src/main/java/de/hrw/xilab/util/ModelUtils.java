@@ -7,7 +7,7 @@ import de.hrw.xilab.model.api.WaterSensorData;
 import de.hrw.xilab.model.wrapper.DeviceWrapper;
 
 public class ModelUtils {
-
+    private ModelUtils(){}
     public static Device toDeviceFromDeviceWrapper(DeviceWrapper wrapperDevice) {
         var device = new Device();
         DeviceData deviceData = new DeviceData();

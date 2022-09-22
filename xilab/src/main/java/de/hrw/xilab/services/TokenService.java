@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
@@ -27,7 +26,7 @@ public class TokenService {
 
     public TokenResult generateToken(Authentication authentication) {
         Instant now = Instant.now();
-        Instant expiration = now.plus(this.expiration, ChronoUnit.DAYS);
+        Instant expireAt = now.plus(this.expiration, ChronoUnit.DAYS);
         String scope = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(" "));
@@ -35,13 +34,13 @@ public class TokenService {
         JwtClaimsSet claimsSet = JwtClaimsSet.builder()
                 .issuer(issuer)
                 .issuedAt(now)
-                .expiresAt(expiration)
+                .expiresAt(expireAt)
                 .claim("scope", scope)
                 .build();
 
         TokenResult result = new TokenResult();
         result.setToken(this.jwtEncoder.encode(JwtEncoderParameters.from(claimsSet)).getTokenValue());
-        result.setExpiration(expiration);
+        result.setExpiration(expireAt);
         result.setIssuedAt(now);
         result.setScope(scope);
         result.setIssuer(issuer);
