@@ -1,8 +1,13 @@
 package de.hrw.xilab;
 
+import de.hrw.xilab.config.RsaKeyProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
+import java.security.interfaces.RSAKey;
+
+@EnableConfigurationProperties(RsaKeyProperties.class)
 @SpringBootApplication
 public class XilabApplication {
 
