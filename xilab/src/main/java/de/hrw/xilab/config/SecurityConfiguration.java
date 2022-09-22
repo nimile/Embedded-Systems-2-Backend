@@ -39,7 +39,7 @@ public class SecurityConfiguration {
                         .mvcMatchers("/admin/**").authenticated()
                         .mvcMatchers("/test/**").authenticated()
                         .mvcMatchers("/device/**").permitAll()
-                        .anyRequest().denyAll())
+                        .mvcMatchers("/token/**").permitAll())
                 .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .httpBasic(Customizer.withDefaults())
