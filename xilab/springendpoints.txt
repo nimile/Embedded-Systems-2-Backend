@@ -121,3 +121,15 @@ Endpoint: /token/renew
     param: 
     returns: tokenresult
     comment: Creates/Renews a JWT token
+
+
+
+maven create docker image
+mvn clean compile package
+mvn spring-boot:build-image
+
+Export docker image to tar
+docker save --output xilab.tar xilab:0.0.1
+
+Import docker image from tar
+docker load --input .\xilab.tar

@@ -1,9 +1,11 @@
 package de.hrw.xilab.spring.model.wrapper;
 
 import lombok.Data;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 
 import javax.persistence.*;
 
+@EnableAutoConfiguration
 @Data
 @Entity
 @Table(name = "DeviceWrapper")
