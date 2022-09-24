@@ -28,12 +28,12 @@ tokenresult =
 uuid = String #example: "688b7fb2-92d1-49cb-0011-4212979ad6cf" 
 
 
-Endpoint: /admin/new/device 
-    Method: Post
-    Body: device
-    param: 
-    returns: 
-    comment: Creates a new device
+Endpoint: /admin/new/device y
+    Method: Post y
+    Body: device y
+    param:  y
+    returns:  y
+    comment: Creates a new device y
 
 Endpoint: /admin/new/list
     Method: Post
