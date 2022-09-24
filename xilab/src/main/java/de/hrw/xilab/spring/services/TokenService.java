@@ -1,6 +1,8 @@
-package de.hrw.xilab.services;
+package de.hrw.xilab.spring.services;
 
-import de.hrw.xilab.model.TokenResult;
+import de.hrw.xilab.spring.model.TokenResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -15,7 +17,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class TokenService {
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(TokenService.class);
     @Value("${security.expiration}")
     private int expiration;
     private final JwtEncoder jwtEncoder;
@@ -25,6 +27,7 @@ public class TokenService {
     }
 
     public TokenResult generateToken(Authentication authentication) {
+        LOGGER.info("New token was requested");
         Instant now = Instant.now();
         Instant expireAt = now.plus(this.expiration, ChronoUnit.DAYS);
         String scope = authentication.getAuthorities().stream()
@@ -44,6 +47,12 @@ public class TokenService {
         result.setIssuedAt(now);
         result.setScope(scope);
         result.setIssuer(issuer);
+
+        LOGGER.info("Token details");
+        LOGGER.info("Expiration {}", expireAt);
+        LOGGER.info("Begin {}", now);
+        LOGGER.info("Scope {}", scope);
+        LOGGER.info("Issuer {}", issuer);
         return result;
     }
 

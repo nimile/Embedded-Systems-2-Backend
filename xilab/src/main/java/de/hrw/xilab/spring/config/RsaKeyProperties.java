@@ -1,4 +1,4 @@
-package de.hrw.xilab.config;
+package de.hrw.xilab.spring.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

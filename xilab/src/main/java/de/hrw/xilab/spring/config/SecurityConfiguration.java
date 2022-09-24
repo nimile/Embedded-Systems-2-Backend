@@ -1,4 +1,4 @@
-package de.hrw.xilab.config;
+package de.hrw.xilab.spring.config;
 
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
