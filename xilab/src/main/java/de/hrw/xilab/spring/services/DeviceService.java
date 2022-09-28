@@ -99,10 +99,11 @@ public class DeviceService {
     public void update(Device device) {
         String uuid = device.getDeviceData().getUuid();
         findByUuid(uuid);
+        deleteByUuid(uuid);
         save(device);
     }
 
-    public void update(String uuid, Optional<Integer> battery, Optional<Integer> waterlevel) {
+    public void update(String uuid, Optional<Integer> battery, Optional<Integer> waterlevel, Optional<Double> longitude, Optional<Double> latitude) {
         var dataset = repository.findByUuid(uuid).orElse(null);
         if(null == dataset){
             LOGGER.info("The device with the given UUID {} does not exist", uuid);
@@ -110,6 +111,8 @@ public class DeviceService {
         }
         battery.ifPresent(dataset::setBattery);
         waterlevel.ifPresent(dataset::setCurrent);
+        longitude.ifPresent(dataset::setLongitude);
+        latitude.ifPresent(dataset::setLatitude);
         repository.save(dataset);
     }
 

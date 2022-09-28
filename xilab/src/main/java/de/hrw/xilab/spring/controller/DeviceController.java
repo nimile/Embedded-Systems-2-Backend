@@ -21,8 +21,10 @@ public class DeviceController {
     @PatchMapping(path = "/{uuid}")
     public void updateDevice(@PathVariable String uuid,
                              @RequestParam Optional<Integer> battery,
-                             @RequestParam Optional<Integer> waterLevel) {
-        deviceService.update(uuid, battery, waterLevel);
+                             @RequestParam Optional<Integer> waterLevel,
+                             @RequestParam Optional<Double> longitude,
+                             @RequestParam Optional<Double> latitude) {
+        deviceService.update(uuid, battery, waterLevel, longitude, latitude);
     }
 
     @GetMapping(path = "/{uuid}")

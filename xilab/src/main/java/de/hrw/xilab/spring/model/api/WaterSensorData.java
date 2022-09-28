@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class WaterSensorData {
-    private int max;
-    private int min;
-    private int current;
+    private int max = 0;
+    private int min = 0;
+    private int current = 0;
 }

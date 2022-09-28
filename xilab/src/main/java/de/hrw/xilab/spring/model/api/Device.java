@@ -4,9 +4,9 @@ import lombok.Data;
 
 @Data
 public class Device {
-    private DeviceData deviceData;
-    private LocationData locationData;
-    private WaterSensorData waterSensorData;
+    private DeviceData deviceData = new DeviceData();
+    private LocationData locationData = new LocationData();
+    private WaterSensorData waterSensorData = new WaterSensorData();
 
 
 }

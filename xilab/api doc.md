@@ -6,13 +6,17 @@ Operation | Description
 --|--
 **Method** | *POST*
 **Authenticaton** |required
-**Param** | none
-**Body** | [Device](#Device)
-**Return** | none
+**Param** | name, Name of the device
+**Param** | max, Maximum of water capacity
+**Param** | min, Minimum of water capacity
+**Body** | none
+**Return** | [Device](#Device)
 **Response** | 200 OK
 --- 
 
 ### **/new/list**
+DEPRECATED
+
 Register a list of devices into the database
 Operation | Description
 --|--
@@ -59,6 +63,44 @@ Operation | Description
 **Return** | [UUIDarray](#UUIDarray)
 **Response** | 200 OK
 --- 
+
+### **/remove/list**
+Request the main source code for given parameter
+Operation | Description
+--|--
+**Method** | *Get*
+**Authenticaton** | optional
+**Param** | name, Name of the device
+**Param** | longitude, longitude of the device
+**Param** | latitude, latitude of the device
+**Body** | none
+**Return** | source filee
+**Response** | 200 OK
+--- 
+
+### **/remove/list**
+Request the lora source code
+Operation | Description
+--|--
+**Method** | *Get*
+**Authenticaton** | optional
+**Param** | none
+**Body** | none
+**Return** | source filee
+**Response** | 200 OK
+--- 
+
+### **/remove/list**
+Request the water measurement source code
+Operation | Description
+--|--
+**Method** | *Get*
+**Authenticaton** | optional
+**Param** | none
+**Body** | none
+**Return** | source filee
+**Response** | 200 OK
+--- 
 ---
 
 ## **/device**
@@ -75,15 +117,18 @@ Operation | Description
 **Response** | 200 OK
 ---
 ### **/{uuid}**
-Requests information about a given device
+Updates information about a given device
 Operation | Description
 --|--
 **Method** | *PATCH*
 **Authenticaton** | required
-**Param** | none
+**Param** | battery, new battery charge value, Optional
+**Param** | waterlevel, new water level, Optional
+**Param** | longitude, new longitude, Optional
+**Param** | latitude, new latitude, Optional
 **Path** | UUID of the device
 **Body** | none
-**Return** | [Device](#Device)
+**Return** | none
 **Response** | 200 OK
 ---
 ### **/all**
