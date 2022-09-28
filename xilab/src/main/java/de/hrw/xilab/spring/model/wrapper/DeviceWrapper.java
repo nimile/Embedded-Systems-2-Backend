@@ -16,8 +16,8 @@ public class DeviceWrapper {
     private String name;
     private String uuid;
     private int battery;
-    private long latitude;
-    private long longitude;
+    private double latitude;
+    private double longitude;
     private int max;
     private int min;
     private int current;

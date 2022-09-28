@@ -10,6 +10,10 @@ services:
       MARIADB_DATABASE: xilab
     ports:
       - "3306:3306"
+    volumes:
+      # example windows: - d:\data\xilab\mysql:/var/lib/mysql
+      # example unix/max: /mnt/d/xilab/mysql:/var/lib/mysql
+      - d:\data\xilab\mysql:/var/lib/mysql
     networks:
       - spring-cloud-network
     healthcheck:
