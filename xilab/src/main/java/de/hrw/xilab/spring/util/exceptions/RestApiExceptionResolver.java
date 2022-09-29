@@ -11,7 +11,6 @@ import java.util.function.Function;
 @ControllerAdvice
 public final class RestApiExceptionResolver {
 
-
     @ExceptionHandler(GenericObjectException.class)
     public ResponseEntity<ErrorResponse> handleGenericObjectException(GenericObjectException ex){
         HttpStatus status = HttpStatus.I_AM_A_TEAPOT;
