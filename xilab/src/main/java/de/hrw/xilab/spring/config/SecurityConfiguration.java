@@ -40,7 +40,8 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-                // .csrf(csrf -> csrf.disable())
+                .csrf(csrf -> csrf.disable())
+                .cors().and()
                 .authorizeRequests(request -> request
                         .mvcMatchers("/admin/**").authenticated()
                         .mvcMatchers("/device/**").permitAll()
@@ -61,7 +62,7 @@ public class SecurityConfiguration {
         return new InMemoryUserDetailsManager(
                 User.withUsername(user)
                         .password(password)
-                        .authorities("read")
+                        .authorities("write")
                         .build());
     }
 

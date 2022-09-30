@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestApiController("/device")
+@CrossOrigin(origins = "http://localhost:3000")
 public class DeviceController {
 
     public final DeviceService deviceService;

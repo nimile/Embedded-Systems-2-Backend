@@ -1,6 +1,7 @@
 package de.hrw.xilab.spring.controller;
 
 import org.springframework.core.annotation.AliasFor;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -13,6 +14,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @RestController
 @RequestMapping
+@CrossOrigin(origins = "http://localhost:3000")
 public @interface RestApiController {
     @AliasFor(annotation = RequestMapping.class, attribute = "value")
     String[] value();
