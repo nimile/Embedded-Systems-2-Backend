@@ -4,35 +4,21 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "utils.h"
 #include "loracom.h"
-//#include "GPS.h"
+#include "wlan.h"
 
-/**
- * @brief This is a helper method
- * It provides a printf style serial printing
- * @param fmt Format
- * @param ... arguments
- */
-void LOGn(const char *fmt, ...) {
-#ifdef DEBUG
-    char buff[1024];
-    va_list pargs;
-    va_start(pargs, fmt);
-    vsnprintf(buff, 1024, fmt, pargs);
-    va_end(pargs);
-    Serial.println(buff);
-#endif
-}
+xilab::BackendGlue backend;
 
+void LOGn(const char *fmt, ...);
 
 void setup() {
   lora_setup();
-  //setup_gps();
+  backend.init();
 }
 
 
 
 void loop(){
   execute();
-  //loop_gps();
 }
