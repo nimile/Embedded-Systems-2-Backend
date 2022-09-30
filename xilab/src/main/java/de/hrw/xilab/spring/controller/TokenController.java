@@ -8,6 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestApiController("/token")
+@CrossOrigin(origins = "http://localhost:3000")
 public class TokenController {
 
     public final DeviceService deviceService;

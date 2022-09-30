@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @RestApiController("/admin")
+@CrossOrigin(origins = "http://localhost:3000")
 public class AdminController {
 
     private final String code;
