@@ -1,9 +1,6 @@
 #ifndef LORA_COM_H_
 #define LORA_COM_H_
 
-
-
-
 #include "LoRaWan_APP.h"
 #include "Arduino.h"
 
