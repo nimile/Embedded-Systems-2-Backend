@@ -6,7 +6,7 @@
 
 #include "utils.h"
 #include "loracom.h"
-#include "wlan.h"
+#include "backendglue.h"
 
 xilab::BackendGlue backend;
 
