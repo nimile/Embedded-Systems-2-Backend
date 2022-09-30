@@ -18,4 +18,30 @@ void LOGn(const char *fmt, ...) {
 #endif
 }
 
+namespace utils{
+    namespace json{
+        int extractInteger(String json, String val){
+            int result = -1;
+
+
+            return result;
+        }
+
+        float extractFloat(String json, String val){
+            float result = -1;
+
+
+            return result;
+        }
+        
+        String extractString(String json, String val){
+            String result = "";
+
+
+            return result;
+        }
+    } // namespace json
+    
+} // utils
+
 #endif // _XILAB_UTILS_H_
