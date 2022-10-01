@@ -3,14 +3,11 @@ package de.hrw.xilab.spring.controller;
 
 import de.hrw.xilab.spring.model.api.Device;
 import de.hrw.xilab.spring.services.DeviceService;
-import de.hrw.xilab.spring.util.FileIO;
+import de.hrw.xilab.spring.util.IOUtils;
 import de.hrw.xilab.spring.util.exceptions.GenericObjectException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,20 +20,20 @@ import java.util.UUID;
 @CrossOrigin(origins = "http://localhost:3000")
 public class AdminController {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AdminController.class);
+    public final DeviceService deviceService;
     private final String code;
     private final String watermeasurement;
     private final String loracom;
-    private static final Logger LOGGER = LoggerFactory.getLogger(AdminController.class);
-    public final DeviceService deviceService;
 
     public AdminController(DeviceService deviceService) {
 
         this.deviceService = deviceService;
 
-        code = FileIO.readFromResource("sourcecode/main.ino");
-        watermeasurement = FileIO.readFromResource("sourcecode/watermeasurement.h");
-        loracom = FileIO.readFromResource("sourcecode/loracom.h");
-   }
+        code = IOUtils.readFromResource("sourcecode/device/main.ino");
+        watermeasurement = IOUtils.readFromResource("sourcecode/device/watermeasurement.h");
+        loracom = IOUtils.readFromResource("sourcecode/device/loracom.h");
+    }
 
 
     @PostMapping(path = "/new/device")
@@ -53,7 +50,7 @@ public class AdminController {
                 .replace("$MIN$", "" + device.getWaterSensorData().getMin());
 
         byte[] result = main.getBytes(StandardCharsets.UTF_8);
-        return buildFileResponseEntity(result, "main.ino");
+        return IOUtils.buildFileDownloadResponseEntity(result, "main.ino");
     }
 
     @PostMapping(path = "/new/list")
@@ -81,7 +78,7 @@ public class AdminController {
     @GetMapping(path = "/code/main")
     public ResponseEntity<Resource> getSourceCode(@RequestParam Optional<String> name,
                                                   @RequestParam Optional<Long> max,
-                                                  @RequestParam Optional<Long> min){
+                                                  @RequestParam Optional<Long> min) {
         String uuid = UUID.randomUUID().toString();
         String main = code.replace("$NAME$", name.orElseThrow())
                 .replace("$MAX$", "" + max.orElseThrow())
@@ -89,22 +86,22 @@ public class AdminController {
                 .replace("$UUID$", uuid);
 
         byte[] result = main.getBytes(StandardCharsets.UTF_8);
-        return buildFileResponseEntity(result, "main.ino");
+        return IOUtils.buildFileDownloadResponseEntity(result, "main.ino");
     }
 
     @GetMapping(path = "/code/lora")
-    public ResponseEntity<Resource> getLoraSourceCode(){
+    public ResponseEntity<Resource> getLoraSourceCode() {
         byte[] result = loracom.getBytes(StandardCharsets.UTF_8);
-        return buildFileResponseEntity(result, "loracom.h");
+        return IOUtils.buildFileDownloadResponseEntity(result, "loracom.h");
     }
 
     @GetMapping(path = "/code/measurement")
-    public ResponseEntity<Resource> getWaterMeasurementSourceCode(){
+    public ResponseEntity<Resource> getWaterMeasurementSourceCode() {
         byte[] result = watermeasurement.getBytes(StandardCharsets.UTF_8);
-        return buildFileResponseEntity(result, "watermeasurement.h");
+        return IOUtils.buildFileDownloadResponseEntity(result, "watermeasurement.h");
     }
 
-    private Device buildDevice(String name, int min, int max){
+    private Device buildDevice(String name, int min, int max) {
         Device device = new Device();
 
         device.getWaterSensorData().setMin(min);
@@ -115,19 +112,9 @@ public class AdminController {
         return device;
     }
 
-    private ResponseEntity<Resource> buildFileResponseEntity(byte[] data, String filename){
-
-        ByteArrayResource resource = new ByteArrayResource(data);
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=\"" + filename + "\"")
-                .contentLength(data.length)
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(resource);
-    }
 
     @GetMapping(path = "/test")
-    public void testIt(@RequestBody Device device){
+    public void testIt(@RequestBody Device device) {
         throw new GenericObjectException("Dummy", device);
     }
 }

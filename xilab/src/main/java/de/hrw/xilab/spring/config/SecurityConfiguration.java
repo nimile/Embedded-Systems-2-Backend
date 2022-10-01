@@ -45,6 +45,7 @@ public class SecurityConfiguration {
                 .authorizeRequests(request -> request
                         .mvcMatchers("/admin/**").authenticated()
                         .mvcMatchers("/device/**").permitAll()
+                        .mvcMatchers("/code/**").permitAll()
                         .mvcMatchers("/token/**").permitAll())
                 .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
