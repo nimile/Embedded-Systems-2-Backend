@@ -16,32 +16,75 @@ void LOGn(const char *fmt, ...) {
     va_end(pargs);
     Serial.println(buff);
 #endif
+
 }
+namespace xilab{
+    namespace utils{
 
-namespace utils{
-    namespace json{
-        int extractInteger(String json, String val){
-            int result = -1;
+        enum JsonResults{
+            OK,
+            PARSED = 301,
+            NOT_PARSED = 302,
+            PARSE_ERROR = 303
+        };
 
+        class JsonUtil{
+            public:
+                static JsonUtil& getInstance(){
+                    static Json instance;
+                    return instance;
+                }
+            private:
+                JsonUtil(){}
 
-            return result;
-        }
+                StaticJsonDocument<255> doc;
+                JsonResults parsed = NOT_PARSED;
+            public:
+                int parse(const char* data){
+                    LOGn("[JSON PARSE  ] Start parsing.");
+                    DeserializationError error = deserializeJson(doc, input, inputLength);
 
-        float extractFloat(String json, String val){
-            float result = -1;
+                    if (error) {
+                        LOGn("[JSON PARSE  ] Cannot parse document. Error: %s.", error.c_str());
+                        return PARSE_ERROR;
+                    }
+                    parsed = OK;
+                    return OK;
+                }
 
+                bool isParsed(){
+                    return parsed == OK;
+                }
 
-            return result;
-        }
-        
-        String extractString(String json, String val){
-            String result = "";
+                int extractInteger(String json, Strign node, String element){
+                    if(parsed != OK){
+                        return parsed;
+                    }
+                    int result = -1;
 
+                    result = doc[node][element];
+                    return result;
+                }
 
-            return result;
-        }
-    } // namespace json
-    
-} // utils
+                float extractFloat(String json, Strign node, String element){
+                    if(parsed != OK){
+                        return parsed;
+                    }
+                    float result = -1;
+                    result = doc[node][element];
+                    return result;
+                }
+                
+                String extractString(String json, Strign node, String element){
+                    if(parsed != OK){
+                        return "";
+                    }
+                    String result = "";
+                    result = doc[node][element];
+                    return result;
+                }
+        } // class json
+    } // utils
+} // xilab
 
 #endif // _XILAB_UTILS_H_

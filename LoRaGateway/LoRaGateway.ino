@@ -16,12 +16,18 @@ void LOGn(const char *fmt, ...);
 void lora_data_received(const char* data, int size){
     String json(data);
     
-    int charge = utils::json::extractInteger(data, "charge");
-    int value = utils::json::extractInteger(data, "value");
-    double lonitude = utils::json::extractInteger(data, "lonitude");
-    double latitude = utils::json::extractInteger(data, "latitude");
-    String uuid = utils::json::extractString(data, "uuid");
-    backend.send(uuid, value, charge, lonitude, latitude);}
+    int result = xilab::utils::JsonUtil::getInstance().parse(json);  
+    if(result == xilab::utils::JsonResults::OK){
+      int charge = xilab::utils::JsonUtil::getInstance().extractInteger(data, "device", "charge");
+      String uuid = xilab::utils::JsonUtil::getInstance().extractString(data, "device", "uuid");
+      int value = xilab::utils::JsonUtil::getInstance().extractInteger(data, "water", "value");
+      double lonitude = xilab::utils::JsonUtil::getInstance().extractInteger(data, "coordinates", "lonitude");
+      double latitude = xilab::utils::JsonUtil::getInstance().extractInteger(data, "coordiantes", "latitude");
+      backend.send(uuid, value, charge, lonitude, latitude);
+    }else{
+      LOGn("[JSON PARSE  ] Parsing yields %i for document \"%s\"", result, json);
+    }
+  }
 
 void setup() {
   Serial.begin(115200);

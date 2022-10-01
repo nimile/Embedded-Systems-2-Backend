@@ -16,8 +16,8 @@ namespace xilab{
         } // namespace lora
 
         namespace wlan{    
-            static constexpr const char* SSID = "WLAN-SLPG6E2";//"lx65_i12";//"WLAN-SLPG6E2";
-            static constexpr const char* PASSWORD = "6445672218886703";//"qwertzuiop";//"6445672218886703";
+            static constexpr const char* SSID = "";//"lx65_i12";//"";
+            static constexpr const char* PASSWORD = "";//"qwertzuiop";//"";
         } // namespace wlan
 
         namespace server{
