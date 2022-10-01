@@ -1,10 +1,7 @@
 package de.hrw.xilab.spring.controller;
 
 
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,7 +28,7 @@ public class SourceCodeController {
 
         this.backend_glue = readFromResource("sourcecode/gateway/backendglue.h");
         this.backend_loracom = readFromResource("sourcecode/gateway/loracom.h");
-        this.backend_main = readFromResource("sourcecode/gateway/LoRaGateway.ino");
+        this.backend_main = readFromResource("sourcecode/gateway/gateway.ino");
 
         this.device_main = readFromResource("sourcecode/device/WaterMeasurement.ino");
         this.device_lora = readFromResource("sourcecode/device/loracom.ino");
@@ -58,7 +55,7 @@ public class SourceCodeController {
     @GetMapping(path = "/gateway/main")
     public ResponseEntity<Resource> getBackendMain() {
         byte[] result = backend_main.getBytes(StandardCharsets.UTF_8);
-        return buildFileDownloadResponseEntity(result, "LoRaGateway.ino");
+        return buildFileDownloadResponseEntity(result, "gateway.ino");
     }
 
 

@@ -30,7 +30,7 @@ public class AdminController {
 
         this.deviceService = deviceService;
 
-        code = IOUtils.readFromResource("sourcecode/device/main.ino");
+        code = IOUtils.readFromResource("sourcecode/device/device.ino");
         watermeasurement = IOUtils.readFromResource("sourcecode/device/watermeasurement.h");
         loracom = IOUtils.readFromResource("sourcecode/device/loracom.h");
     }
@@ -50,7 +50,7 @@ public class AdminController {
                 .replace("$MIN$", "" + device.getWaterSensorData().getMin());
 
         byte[] result = main.getBytes(StandardCharsets.UTF_8);
-        return IOUtils.buildFileDownloadResponseEntity(result, "main.ino");
+        return IOUtils.buildFileDownloadResponseEntity(result, "device.ino");
     }
 
     @PostMapping(path = "/new/list")
@@ -86,7 +86,7 @@ public class AdminController {
                 .replace("$UUID$", uuid);
 
         byte[] result = main.getBytes(StandardCharsets.UTF_8);
-        return IOUtils.buildFileDownloadResponseEntity(result, "main.ino");
+        return IOUtils.buildFileDownloadResponseEntity(result, "device.ino");
     }
 
     @GetMapping(path = "/code/lora")
