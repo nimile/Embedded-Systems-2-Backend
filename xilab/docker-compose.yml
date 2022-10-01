@@ -13,7 +13,7 @@ services:
     volumes:
       # example windows: - d:\data\xilab\mysql:/var/lib/mysql
       # example unix/max: /mnt/d/xilab/mysql:/var/lib/mysql
-      - d:\data\xilab\mysql:/var/lib/mysql
+      - /Users/nilsmilewski/develop/database
     networks:
       - spring-cloud-network
     healthcheck:
@@ -23,10 +23,7 @@ services:
     depends_on:
       database:
         condition: service_healthy
-    build:
-      context: xilab
-      dockerfile: Dockerfile
-    image: xilab:0.0.1
+    build: .
     ports:
       - "8080:8080"
     networks:
