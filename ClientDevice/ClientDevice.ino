@@ -1,10 +1,10 @@
-#define DEBUG_
+#define DEBUG
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
 #include <stdio.h>
 
-
+#include "utils.h"
 #include "watermeasurement.h"
 #include "loracom.h"
 
@@ -22,24 +22,6 @@
 // For production remove line 24 - 25 and uncomment line 26
 //#define ACTIVITY_THRESHOLD (5 * MINUTE) 
 #define ACTIVITY_THRESHOLD (500)
-
-
-/**
- * @brief This is a helper method
- * It provides a printf style serial printing
- * @param fmt Format
- * @param ... arguments
- */
-void LOGn(const char *fmt, ...) {
-#ifdef DEBUG
-    char buff[1024];
-    va_list pargs;
-    va_start(pargs, fmt);
-    vsnprintf(buff, 1024, fmt, pargs);
-    va_end(pargs);
-    Serial.println(buff);
-#endif
-}
 
 
 
@@ -73,6 +55,8 @@ water_sensor_data water_data_m;
 device_data device_data_m;
 location_data location_data_m;
 
+xilab::network::lora::LoRaNetwork network = xilab::network::lora::LoRaNetwork::getInstance();
+
 void setup() { 
     // Device name e.g. SouthWest001
     device_data_m.name = "Test Device 0001";
@@ -90,7 +74,7 @@ void setup() {
 
     Serial.begin(115200);
 
-    setup_lora();
+    network.init();
     initialize_water_sensor_module();
     LOGn("[SETUP  ] Device Configuration");
     LOGn("[SETUP  ] Device name: %s", device_data_m.name);
@@ -135,12 +119,12 @@ int measure_battery(){
 void send_data(){
     LOGn("[NOTIFY] Sending data to master device");
     char buffer[255] = {0};
-    sprintf(buffer, "{\"device\":{\"name\":\"%s\",\"id\":\"%s\",\"battery\":%d},\"water\":{\"max\":%d,\"min\":%d,\"current\":%d},\"location\":{\"long\":%ld,\"lat\":%ld}}",
-    device_data_m.name, device_data_m.id, device_data_m.battery,
-    water_data_m.max, water_data_m.min, water_data_m.current,
+    String data = "{\"device\":{\"UUID\":\"12345\",\"charge\":\"70\"},\"water\":{\"max\":9999,\"min\":0000,\"current\":5555},\"coordinates\":{\"longitude\": 6.825941,\"longitude\":51.470835}}";
+                      
+    sprintf(buffer, "{\"device\":{\"UUID\":\"%s\",\"charge\":%d},\"water\":{\"current\":%d},\"location\":{\"longitude\":%ld,\"longitude\":%ld}}",
+    device_data_m.id, device_data_m.battery, water_data_m.current,
     location_data_m.longitude, location_data_m.latitude);
-    Serial.println(buffer);
-    broadcast_data(buffer);
+    network.send(String(buffer));
 }
 
 /**
@@ -150,15 +134,19 @@ void send_data(){
  */
 void send_code(int code){
     char buffer[255] = {0};
-    sprintf(buffer, "{\"error_code\":%i,\"device\":{\"name\":\"%s\",\"id\":\"%s\",\"battery\":%d},\"location\":{\"long\":%ld,\"lat\":%ld}}",
+    sprintf(buffer, "{\"error_code\":%i,\"device\":{\"UUID\":\"%s\",\"charge\":%d},\"location\":{\"longitude\":%ld,\"latitude\":%ld}}",
     code,
-    device_data_m.name, device_data_m.id, device_data_m.battery,
+    device_data_m.id, device_data_m.battery,
     location_data_m.longitude, location_data_m.latitude);
-    broadcast_data(buffer);
+    network.send(buffer);
 }
 
 void loop() {
     
+    send_data();
+
+
+    /*
     device_data_m.battery = measure_battery();
     water_data_m.current = read_water_level();
     send_data();
@@ -174,5 +162,7 @@ void loop() {
         }
         //esp_deep_sleep_start();
     }
-    delay(ACTIVITY_THRESHOLD);    
+    delay(ACTIVITY_THRESHOLD);   
+    
+    */
 }

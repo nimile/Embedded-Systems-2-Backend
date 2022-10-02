@@ -27,8 +27,7 @@ void lora_data_received(String data){
     }else{
       LOGn("[ROOT        ](data rec) Parsing yields %i for document \"%s\"", result, json);
     }
-  }
-
+}
 void setup() {
   Serial.begin(115200);
   LOGn("[SETUP       ](setup  ) Start setup.");

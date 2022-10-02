@@ -55,9 +55,9 @@ namespace xilab{
                         if(!initialized_m){
                             LOGn("[BACKEND GLUE] Module not initialized.");
                             return BackendResults::NOT_INITIALIZED;
-                        }else if(disconnected()){
+                        }else if(!WiFi.isConnected()){
                             LOGn("[BACKEND GLUE] Cannot send data due a los of connection, please try again later.");
-                            connect();
+                            reconnect();
                             return NOT_CONNECTED;
                         }
                     	String batteryQuery = charge >= 0 ? String("battery=") + charge : "";
@@ -74,6 +74,10 @@ namespace xilab{
                         int statusCode = client->responseStatusCode();
                         String response = client->responseBody();
                         LOGn("[BACKEND GLUE] Result (%i): %s", statusCode, response.c_str());
+                        
+                        if(statusCode >= 400 && statusCode < 500){
+                            refreshToken();
+                        }
                         return (statusCode >= 200 && statusCode < 300) ? BackendResults::OK : statusCode;
                     }
 
@@ -113,13 +117,27 @@ namespace xilab{
                         return false;
                     }
 
+                    void reconnect(int retries = 100, int wait = 1000){
+                        int status = WL_IDLE_STATUS;
+                        LOGn("[BACKEND GLUE] Reconnecting to network.");
+                        for(int i = 0; i < retries && status != WL_CONNECTED; i++){
+                            LOGn("Attempt %i", i);
+                            status = connect();
+                            delay(wait);
+                        }
+                        if(status != WL_CONNECTED){
+                            LOGn("[BACKEND GLUE] Cannot reconnect to network.");
+                        }
+                    }
+
                     int connect(){  
                         LOGn("[BACKEND GLUE] Start connecting to network.");
                         int status = WL_IDLE_STATUS;
                         for(int i = 0; i < configuration::retries::LORA && status != WL_CONNECTED; i++) {
                             LOGn("[BACKEND GLUE] Connect to %s attempt %i." , xilab::configuration::wlan::SSID, i);
                             delay(500);
-                            WiFi.begin(configuration::wlan::SSID, configuration::wlan::PASSWORD);                            WiFi.reconnect();
+                            WiFi.begin(configuration::wlan::SSID, configuration::wlan::PASSWORD);   
+                            WiFi.reconnect();
                             status = WiFi.waitForConnectResult();
                             LOGn("[BACKEND GLUE] Network status %i.", status);
                         }
