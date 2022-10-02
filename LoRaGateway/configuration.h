@@ -9,15 +9,15 @@ namespace xilab{
         } // namespace retries
 
         namespace lora{
-            static constexpr const uint8_t PIN_SS = 15;
-            static constexpr const uint8_t PIN_RST = 15;
-            static constexpr const uint8_t PIN_DIO0 = 15;
-            static constexpr const uint8_t REGION = 0;
+            static constexpr const uint8_t PIN_SS = 18;
+            static constexpr const uint8_t PIN_RST = 14;
+            static constexpr const uint8_t PIN_DIO0 = 26;
+            static constexpr const long REGION = 868E6;
         } // namespace lora
 
         namespace wlan{    
-            static constexpr const char* SSID = "";//"lx65_i12";//"";
-            static constexpr const char* PASSWORD = "";//"qwertzuiop";//"";
+            static constexpr const char* SSID = 
+            static constexpr const char* PASSWORD = 
         } // namespace wlan
 
         namespace server{
@@ -32,7 +32,6 @@ namespace xilab{
 
 #endif // _XILAB_CREDENTIALS_H_
 
-8273 599726 2583 7881 47415 35
 
-1681886808664455233813288
+//1681886808664455233813288
 

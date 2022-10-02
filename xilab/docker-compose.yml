@@ -11,9 +11,9 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      # example unix/max: /mnt/d/xilab/mysql:/var/lib/mysql
-      #- /Users/nilsmilewski/develop/database
-      - d:\data\xilab\mysql:/var/lib/mysql
+      # Unix/MacOs: /xilab/mysql:/var/xilab/mysql
+      # Windows:    c:/xilab/mysql:/var/xilab/mysql
+      - Set path according to your OS
     networks:
       - spring-cloud-network
     healthcheck:
