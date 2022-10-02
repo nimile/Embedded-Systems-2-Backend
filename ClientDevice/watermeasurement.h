@@ -32,6 +32,7 @@ typedef struct water_sensor_data_t{
     int current;
 } water_sensor_data;
 
+typedef water_sensor_data WaterSensorData;
 
 VL53L0X water_sensor;
 

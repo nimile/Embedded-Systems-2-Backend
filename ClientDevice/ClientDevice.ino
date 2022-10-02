@@ -24,65 +24,40 @@
 #define ACTIVITY_THRESHOLD (500)
 
 
-
-/**
- * @brief This struct contains information about the device
- */
-typedef struct device_data_t{
-    /// Name of the device
-	const char* name;
-
+typedef struct Dataset_t{
     /// UUID of the device
-	const char* id;
+	const char* uuid;
 
     /// Current battery voltage in percent
     unsigned short battery;
-} device_data;
 
-/**
- * @brief This struct contains the location of the device
- */
-typedef struct location_data_t{
     /// Longitude of the location
     long longitude;
 
-    /// Langitude of the location
+    /// Latitude of the location
     long latitude;
-}location_data;
 
+    WaterSensorData water_data;
+} Dataset;
 
-water_sensor_data water_data_m;
-device_data device_data_m;
-location_data location_data_m;
+Dataset data;
 
 xilab::network::lora::LoRaNetwork network = xilab::network::lora::LoRaNetwork::getInstance();
 
 void setup() { 
-    // Device name e.g. SouthWest001
-    device_data_m.name = "Test Device 0001";
-    // UUID e.g. 688b7fb2-92d1-49bb-93bc-2212979ad6ca
-    device_data_m.id = "688b7fb2-92d1-49bb-93bc-2212979ad6ca";
 
-    // GPS Coordinates
-    location_data_m.latitude = 0;
-    location_data_m.longitude = 0;
-
-    // Waterlevel, e.g. watertank boundaries
-    water_data_m.max = 15 * 10;
-    water_data_m.min = 0;
-
+    data.battery = 0;
+    data.uuid = "";
+    data.latitude = 0;
+    data.longitude = 0;
+    data.water_data.max = 0;
+    data.water_data.min = 0;
+    data.water_data.current = 0;
 
     Serial.begin(115200);
 
     network.init();
     initialize_water_sensor_module();
-    LOGn("[SETUP  ] Device Configuration");
-    LOGn("[SETUP  ] Device name: %s", device_data_m.name);
-    LOGn("[SETUP  ] Device UUID: %s", device_data_m.id);
-    LOGn("[SETUP  ] longitude  : %d", location_data_m.longitude);
-    LOGn("[SETUP  ] latitude   : %d", location_data_m.latitude);
-    LOGn("[SETUP  ] water min  : %d", water_data_m.min);
-    LOGn("[SETUP  ] water max  : %d", water_data_m.max);
 }
 
 /**
@@ -119,11 +94,10 @@ int measure_battery(){
 void send_data(){
     LOGn("[NOTIFY] Sending data to master device");
     char buffer[255] = {0};
-    String data = "{\"device\":{\"UUID\":\"12345\",\"charge\":\"70\"},\"water\":{\"max\":9999,\"min\":0000,\"current\":5555},\"coordinates\":{\"longitude\": 6.825941,\"longitude\":51.470835}}";
                       
     sprintf(buffer, "{\"device\":{\"UUID\":\"%s\",\"charge\":%d},\"water\":{\"current\":%d},\"location\":{\"longitude\":%ld,\"longitude\":%ld}}",
-    device_data_m.id, device_data_m.battery, water_data_m.current,
-    location_data_m.longitude, location_data_m.latitude);
+    data.id, data.battery, data.water_data.current,
+    data.longitude, data.latitude);
     network.send(String(buffer));
 }
 
@@ -136,8 +110,8 @@ void send_code(int code){
     char buffer[255] = {0};
     sprintf(buffer, "{\"error_code\":%i,\"device\":{\"UUID\":\"%s\",\"charge\":%d},\"location\":{\"longitude\":%ld,\"latitude\":%ld}}",
     code,
-    device_data_m.id, device_data_m.battery,
-    location_data_m.longitude, location_data_m.latitude);
+    data.uuid, data.battery,
+    data.longitude, data.latitude);
     network.send(buffer);
 }
 
@@ -146,16 +120,15 @@ void loop() {
     send_data();
 
 
-    /*
-    device_data_m.battery = measure_battery();
-    water_data_m.current = read_water_level();
+    data.battery = measure_battery();
+    data.water_data.current = read_water_level();
     send_data();
     
     
     // To ensure an under-voltage protection the esp will go into the deepsleep
     // The master device is notified 10 times with an urgent message
-    if(false && device_data_m.battery  <= 3.3){  
-        device_data_m.battery = 0;
+    if(false && data.battery  <= 3.3){  
+        data.battery = 0;
         for(int i = 0; i < 10; ++i){
             send_code(0xDE);
             delay(1000);
@@ -164,5 +137,4 @@ void loop() {
     }
     delay(ACTIVITY_THRESHOLD);   
     
-    */
 }
