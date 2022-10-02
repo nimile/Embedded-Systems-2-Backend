@@ -1,6 +1,9 @@
 #ifndef _XILAB_UTILS_H_
 #define _XILAB_UTILS_H_
 
+#include <ArduinoJson.h>
+
+
 /**
  * @brief This is a helper method
  * It provides a printf style serial printing
@@ -31,21 +34,22 @@ namespace xilab{
         class JsonUtil{
             public:
                 static JsonUtil& getInstance(){
-                    static Json instance;
+                    static JsonUtil instance;
                     return instance;
                 }
             private:
                 JsonUtil(){}
 
-                StaticJsonDocument<255> doc;
+                StaticJsonDocument<1024> doc;
                 JsonResults parsed = NOT_PARSED;
+                DeserializationError lastError;
             public:
-                int parse(const char* data){
+                int parse(String input){
                     LOGn("[JSON PARSE  ] Start parsing.");
-                    DeserializationError error = deserializeJson(doc, input, inputLength);
+                    lastError = deserializeJson(doc, input);
 
-                    if (error) {
-                        LOGn("[JSON PARSE  ] Cannot parse document. Error: %s.", error.c_str());
+                    if (lastError) {
+                        LOGn("[JSON PARSE  ] Cannot parse document. Error: %s.", lastError.c_str());
                         return PARSE_ERROR;
                     }
                     parsed = OK;
@@ -56,34 +60,48 @@ namespace xilab{
                     return parsed == OK;
                 }
 
-                int extractInteger(String json, Strign node, String element){
+                int extractInteger(String json, String node, String element){
                     if(parsed != OK){
+                        LOGn("[JSON PARSE  ] Cannot extract value: %s.", lastError.c_str());
                         return parsed;
                     }
                     int result = -1;
 
-                    result = doc[node][element];
+                    if(node.equals("")){
+                        result = doc[element];
+                    }else{
+                        result = doc[node][element];
+                    }
                     return result;
                 }
 
-                float extractFloat(String json, Strign node, String element){
+                float extractFloat(String json, String node, String element){
                     if(parsed != OK){
+                        LOGn("[JSON PARSE  ] Cannot extract value: %s.", lastError.c_str());
                         return parsed;
                     }
                     float result = -1;
-                    result = doc[node][element];
+                    if(node.equals("")){
+                        result = doc[element];
+                    }else{
+                        result = doc[node][element];
+                    }
                     return result;
                 }
                 
-                String extractString(String json, Strign node, String element){
+                String extractString(String json, String node, String element){
                     if(parsed != OK){
+                        LOGn("[JSON PARSE  ] Cannot extract value: %s.", lastError.c_str());
                         return "";
                     }
                     String result = "";
-                    result = doc[node][element];
-                    return result;
+                    if(node.equals("")){
+                        return doc[element];
+                    }else{
+                        return doc[node][element];
+                    }
                 }
-        } // class json
+        }; // class json
     } // utils
 } // xilab
 

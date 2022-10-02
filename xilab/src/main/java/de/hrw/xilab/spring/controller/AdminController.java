@@ -23,16 +23,12 @@ public class AdminController {
     private static final Logger LOGGER = LoggerFactory.getLogger(AdminController.class);
     public final DeviceService deviceService;
     private final String code;
-    private final String watermeasurement;
-    private final String loracom;
 
     public AdminController(DeviceService deviceService) {
 
         this.deviceService = deviceService;
 
-        code = IOUtils.readFromResource("sourcecode/device/device.ino");
-        watermeasurement = IOUtils.readFromResource("sourcecode/device/watermeasurement.h");
-        loracom = IOUtils.readFromResource("sourcecode/device/loracom.h");
+        code = IOUtils.readFromResource("sourcecode/ClientDevice/ClientDevice.ino");
     }
 
 
@@ -44,13 +40,12 @@ public class AdminController {
         Device device = buildDevice(name.orElseThrow(), min.orElseThrow(), max.orElseThrow());
         deviceService.save(device);
 
-        String main = code.replace("$NAME$", device.getDeviceData().getName())
-                .replace("$UUID$", device.getDeviceData().getUuid())
+        String main = code.replace("$UUID$", device.getDeviceData().getUuid())
                 .replace("$MAX$", "" + device.getWaterSensorData().getMax())
                 .replace("$MIN$", "" + device.getWaterSensorData().getMin());
 
         byte[] result = main.getBytes(StandardCharsets.UTF_8);
-        return IOUtils.buildFileDownloadResponseEntity(result, "device.ino");
+        return IOUtils.buildFileDownloadResponseEntity(result, "ClientDevice.ino");
     }
 
     @PostMapping(path = "/new/list")
@@ -80,25 +75,12 @@ public class AdminController {
                                                   @RequestParam Optional<Long> max,
                                                   @RequestParam Optional<Long> min) {
         String uuid = UUID.randomUUID().toString();
-        String main = code.replace("$NAME$", name.orElseThrow())
-                .replace("$MAX$", "" + max.orElseThrow())
+        String main =code.replace("$MAX$", "" + max.orElseThrow())
                 .replace("$MIN$", "" + min.orElseThrow())
                 .replace("$UUID$", uuid);
 
         byte[] result = main.getBytes(StandardCharsets.UTF_8);
         return IOUtils.buildFileDownloadResponseEntity(result, "device.ino");
-    }
-
-    @GetMapping(path = "/code/lora")
-    public ResponseEntity<Resource> getLoraSourceCode() {
-        byte[] result = loracom.getBytes(StandardCharsets.UTF_8);
-        return IOUtils.buildFileDownloadResponseEntity(result, "loracom.h");
-    }
-
-    @GetMapping(path = "/code/measurement")
-    public ResponseEntity<Resource> getWaterMeasurementSourceCode() {
-        byte[] result = watermeasurement.getBytes(StandardCharsets.UTF_8);
-        return IOUtils.buildFileDownloadResponseEntity(result, "watermeasurement.h");
     }
 
     private Device buildDevice(String name, int min, int max) {

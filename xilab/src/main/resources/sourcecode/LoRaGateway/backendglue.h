@@ -23,7 +23,7 @@ namespace xilab{
                     HttpClient* client = nullptr; 
                 public:
                     int init(){
-                        LOGn("[BACKEND GLUE] Initialize backendg glue.");
+                        LOGn("[BACKEND GLUE] Initialize backend glue.");
                         delay(1000);
                         
                         LOGn("[BACKEND GLUE] Connect to network.");
@@ -39,7 +39,7 @@ namespace xilab{
                             client->stop();
                             delete client;
                         }
-                        LOGn("[BACKEND GLUE] Create net http client");
+                        LOGn("[BACKEND GLUE] Create new http client");
                         client = new HttpClient(wifi, configuration::server::SERVER_ADDRESS, configuration::server::PORT);
                         initialized_m = true;
                         LOGn("[BACKEND GLUE] Request new authorization token.");
@@ -49,18 +49,17 @@ namespace xilab{
                         return statusCode;
                     }
 
-                    int send(String uuid, int current, int charge, double longitude, double latitude){
+                    int send(String uuid, int current, int charge, float longitude, float latitude){
                         
                         LOGn("[BACKEND GLUE] Send data to server.");
                         if(!initialized_m){
                             LOGn("[BACKEND GLUE] Module not initialized.");
                             return BackendResults::NOT_INITIALIZED;
-                        }else if(disconnected()){
+                        }else if(!WiFi.isConnected()){
                             LOGn("[BACKEND GLUE] Cannot send data due a los of connection, please try again later.");
-                            connect();
+                            reconnect();
                             return NOT_CONNECTED;
                         }
-                    
                     	String batteryQuery = charge >= 0 ? String("battery=") + charge : "";
                     	String currentQuery = current >= 0 ? String("waterLevel=") + current : "";
                     	String latitudeQuery = latitude >= 0 ? String("latitude=") + latitude : "";
@@ -68,12 +67,17 @@ namespace xilab{
 
                         LOGn("[BACKEND GLUE] Build request.");
                         client->beginRequest();
-                        client->patch("/device" + uuid + "?" + batteryQuery + "&" + currentQuery + "&" + latitudeQuery + "&" + longitudeQuery);
-                        client->sendHeader("Authorization", String("Bearer ") + token);
+                        client->patch("/device/" + uuid + "?" + batteryQuery + "&" + currentQuery + "&" + latitudeQuery + "&" + longitudeQuery);
+                        client->sendHeader("Authorization", String("Bearer ") + token  );
                         client->endRequest();
 
                         int statusCode = client->responseStatusCode();
                         String response = client->responseBody();
+                        LOGn("[BACKEND GLUE] Result (%i): %s", statusCode, response.c_str());
+                        
+                        if(statusCode >= 400 && statusCode < 500){
+                            refreshToken();
+                        }
                         return (statusCode >= 200 && statusCode < 300) ? BackendResults::OK : statusCode;
                     }
 
@@ -99,8 +103,9 @@ namespace xilab{
                             return statusCode;
                         }
                         
-                        //Todo extract token
-                        token = utils::json::extractString(response, "token");
+                        utils::JsonUtil::getInstance().parse(response);
+                        token = utils::JsonUtil::getInstance().extractString("token", "", "token");
+                        LOGn("[BACKEND GLUE] Token is %s", token.c_str());
                         return BackendResults::OK;
                     }
 
@@ -112,17 +117,29 @@ namespace xilab{
                         return false;
                     }
 
+                    void reconnect(int retries = 100, int wait = 1000){
+                        int status = WL_IDLE_STATUS;
+                        LOGn("[BACKEND GLUE] Reconnecting to network.");
+                        for(int i = 0; i < retries && status != WL_CONNECTED; i++){
+                            LOGn("Attempt %i", i);
+                            status = connect();
+                            delay(wait);
+                        }
+                        if(status != WL_CONNECTED){
+                            LOGn("[BACKEND GLUE] Cannot reconnect to network.");
+                        }
+                    }
+
                     int connect(){  
-                        
                         LOGn("[BACKEND GLUE] Start connecting to network.");
                         int status = WL_IDLE_STATUS;
                         for(int i = 0; i < configuration::retries::LORA && status != WL_CONNECTED; i++) {
-                            LOGn("[BACKEND GLUE] Connection attempt %i." , i);
-                            WiFi.disconnect();
+                            LOGn("[BACKEND GLUE] Connect to %s attempt %i." , xilab::configuration::wlan::SSID, i);
                             delay(500);
-                            status = WiFi.begin(configuration::wlan::SSID, configuration::wlan::PASSWORD);
+                            WiFi.begin(configuration::wlan::SSID, configuration::wlan::PASSWORD);   
+                            WiFi.reconnect();
+                            status = WiFi.waitForConnectResult();
                             LOGn("[BACKEND GLUE] Network status %i.", status);
-                            delay(500);
                         }
                         return status;
                     }

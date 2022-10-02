@@ -12,8 +12,9 @@ services:
       - "3306:3306"
     volumes:
       # Unix/MacOs: /xilab/mysql:/var/xilab/mysql
-      # Windows:    c:/xilab/mysql:/var/xilab/mysql
-      - Set path according to your OS
+      # Windows:    c:\xilab\mysql:/var/xilab/mysql
+      #- Set path according to your OS
+      - D:\data\xilab:/var/xilab/mysql
     networks:
       - spring-cloud-network
     healthcheck:
