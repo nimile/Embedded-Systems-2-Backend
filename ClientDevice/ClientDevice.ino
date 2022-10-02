@@ -1,3 +1,5 @@
+// TODO ADD GPS AND WATER MEASUREMENT
+
 #define DEBUG
 #include <stdlib.h>
 #include <stdarg.h>
@@ -7,6 +9,7 @@
 #include "utils.h"
 #include "watermeasurement.h"
 #include "loracom.h"
+#include "xilabgps.h"
 
 #define BATTERY_PIN 34
 #define MAX_VOLTAGE (4.2)
@@ -41,6 +44,7 @@ typedef struct Dataset_t{
 } Dataset;
 
 Dataset data;
+xilab::GPS gps = xilab::GPS::getInstance();
 
 xilab::network::lora::LoRaNetwork network = xilab::network::lora::LoRaNetwork::getInstance();
 
@@ -96,7 +100,7 @@ void send_data(){
     char buffer[255] = {0};
                       
     sprintf(buffer, "{\"device\":{\"UUID\":\"%s\",\"charge\":%d},\"water\":{\"current\":%d},\"location\":{\"longitude\":%ld,\"longitude\":%ld}}",
-    data.id, data.battery, data.water_data.current,
+    data.uuid, data.battery, data.water_data.current,
     data.longitude, data.latitude);
     network.send(String(buffer));
 }
@@ -122,6 +126,7 @@ void loop() {
 
     data.battery = measure_battery();
     data.water_data.current = read_water_level();
+    gps.locate();
     send_data();
     
     
