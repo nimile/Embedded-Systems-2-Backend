@@ -1,3 +1,4 @@
+
 // TODO ADD GPS AND WATER MEASUREMENT
 
 #define DEBUG
@@ -35,10 +36,10 @@ typedef struct Dataset_t{
     unsigned short battery;
 
     /// Longitude of the location
-    long longitude;
+    float longitude;
 
     /// Latitude of the location
-    long latitude;
+    float latitude;
 
     WaterSensorData water_data;
 } Dataset;
@@ -61,6 +62,7 @@ void setup() {
     Serial.begin(115200);
 
     network.init();
+    gps.init(); 
     initialize_water_sensor_module();
 }
 
@@ -121,14 +123,10 @@ void send_code(int code){
 
 void loop() {
     
-    send_data();
-
-
-    data.battery = measure_battery();
+   // data.battery = measure_battery();
     data.water_data.current = read_water_level();
-    gps.locate();
+    gps.locate(data.longitude, data.latitude);
     send_data();
-    
     
     // To ensure an under-voltage protection the esp will go into the deepsleep
     // The master device is notified 10 times with an urgent message

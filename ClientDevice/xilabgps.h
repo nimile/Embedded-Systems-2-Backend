@@ -1,6 +1,10 @@
 #ifndef _XILAB_GPS_H_
 #define _XILAB_GPS_H_
 
+#include <TinyGPS.h>
+#include <SPI.h>
+#include<Arduino.h>
+
 namespace xilab{
 
     enum GPS_Results{
@@ -16,16 +20,19 @@ namespace xilab{
                 return instance;
             }
         private:
-            GPS(){}
+            GPS() : Serial1(1){}
 
             bool initialized_m = false;
 
             float latitude_m;
             float longitude_m;
-            float altitude_m;
 
             long lastLocation = 0;
             long locationOffset = 500;
+
+            HardwareSerial Serial1;
+            TinyGPS gps;
+
         public:
 
             bool isInitialized(){
@@ -33,19 +40,28 @@ namespace xilab{
             }
 
             GPS_Results init(){
+                Serial1.begin(9600,SERIAL_8N1,14,13);
+
                 initialized_m = true;
                 return GPS_Results::OK;
             } 
 
-            GPS_Results locate(){
+            GPS_Results locate(float& longitude, float& latitude){
                 if(!isLocationAllowed()){
-                    return NOT_YET_ALLOWED;
+                    //return NOT_YET_ALLOWED;
                 }
-                
+                while (Serial1.available()){
+                    gps.encode(Serial1.read());
+                }
+
+                  gps.f_get_position(&latitude_m, &longitude_m);
+                    longitude = longitude_m;
+                    latitude = latitude_m;
                 lastLocation = millis();
-                //longitude_m = ...
-                //latitude_m = ...
-                //altitude_m = ...
+                
+                LOGn("============================================");
+                LOGn("[GPS       ] %f %f", latitude_m, longitude_m);
+                LOGn("============================================");
                 return GPS_Results::LOCATED;
             }
 
@@ -60,12 +76,7 @@ namespace xilab{
             float getLatitude(){
                 return latitude_m;
             }
-            
-            float getAltitude(){
-                return altitude_m;
-            }
     };
 } // namespace xilab
-
 
 #endif // _XILAB_GPS_H_

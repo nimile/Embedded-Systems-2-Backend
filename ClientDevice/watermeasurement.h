@@ -47,7 +47,7 @@ bool initialize_water_sensor_module(int retries = 10){
     LOGn("[VL53L0X] Initialize module");
 
     LOGn("[VL53L0X] Start I2C wire");
-    Wire.begin(SCK_PIN, SCL_PIN);
+    Wire.begin();
 
     LOGn("[VL53L0X] Module settings");
     LOGn("[VL53L0X] Pin SCK:             %i", SCK_PIN);
@@ -58,7 +58,8 @@ bool initialize_water_sensor_module(int retries = 10){
     LOGn("[VL53L0X] Calibration:         %i", DISTANCE_CALIBRATION_VALUE);
     LOGn("[VL53L0X] amount measurements: %i", AMOUNT_MEASUREMENTS);
 
-    
+      water_sensor.startContinuous();
+if(true)return true;
     LOGn("[VL53L0X] Start initialization, max retries are %i", retries);
     water_sensor.setTimeout(500);
     for(int i = 0; i < retries; ++i){
@@ -94,15 +95,27 @@ bool initialize_water_sensor_module(int retries = 10){
  */
 int read_water_level(){
     LOGn("[VL53L0X]Reading water level");
-
+int val = 0;
+  if (water_sensor.timeoutOccurred()) { Serial.print(" TIMEOUT"); 
+  return -1;}
+  if (water_sensor.readRangeContinuousMillimeters() < 4000) {
+    val = water_sensor.readRangeContinuousMillimeters();
+    Serial.println(val);
+  }
+  if(true) return val;
     int sum = 0;
-    for(int i = 0; i < AMOUNT_MEASUREMENTS; ++i){
+    int runs = 0;
+    for(; runs < AMOUNT_MEASUREMENTS; runs++){
+        Serial.println("Run#");
         if (!water_sensor.timeoutOccurred()) { 
             sum += water_sensor.readRangeContinuousMillimeters() * DISTANCE_CALIBRATION_VALUE;
+            Serial.println(sum);
+        }else{
+            Serial.println("Timeout");
         }
     }
 
-    return sum / AMOUNT_MEASUREMENTS;
+    return sum / runs;
 }
 
 #endif // WATER_MEASUREMENT_H_
