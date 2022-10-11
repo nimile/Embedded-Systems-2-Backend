@@ -48,7 +48,7 @@ namespace xilab{
 
             GPS_Results locate(float& longitude, float& latitude){
                 if(!isLocationAllowed()){
-                    //return NOT_YET_ALLOWED;
+                    return NOT_YET_ALLOWED;
                 }
                 while (Serial1.available()){
                     gps.encode(Serial1.read());
